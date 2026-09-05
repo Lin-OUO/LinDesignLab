@@ -11,7 +11,7 @@ const LinkifiedText = ({ text }) => text.split(/(https?:\/\/[^\s]+|@owen)/gi).ma
   return part
 })
 
-function ProjectCover({ project, onOpen }) {
+function ProjectCover({ project, onOpen, eager = false }) {
   const cover = useRef(null)
 
   useEffect(() => {
@@ -24,9 +24,9 @@ function ProjectCover({ project, onOpen }) {
     return () => observer.disconnect()
   }, [])
 
-  if (!project.title) return <article ref={cover} className="project-full-cover project-enter">{project.cover && <img src={project.cover} alt={`${project.id} project cover`} />}</article>
+  if (!project.title) return <article ref={cover} className="project-full-cover project-enter">{project.cover && <img src={project.cover} alt={`${project.id} project cover`} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" />}</article>
 
-  return <button ref={cover} className="project-full-cover is-clickable project-enter" type="button" onClick={() => onOpen(project)}>{project.cover && <img src={project.cover} alt={`${project.id} project cover`} />}<span>{project.title}</span></button>
+  return <button ref={cover} className="project-full-cover is-clickable project-enter" type="button" onClick={() => onOpen(project)}>{project.cover && <img src={project.cover} alt={`${project.id} project cover`} loading={eager ? 'eager' : 'lazy'} fetchPriority={eager ? 'high' : 'auto'} decoding="async" />}<span>{project.title}</span></button>
 }
 const OrbitalMark = ({ className = '' }) => (
   <svg className={`orbital-mark ${className}`} viewBox="0 0 180 90" fill="none" aria-hidden="true">
@@ -97,7 +97,7 @@ function ProjectDetailOverlay({ project, onClose }) {
         <header className="project-detail-topline"><button type="button" onClick={onClose}>CLOSE <span>×</span></button></header>
         <div className="project-detail-intro"><h2 id="project-detail-title">{project.innerTitle}</h2><p><LinkifiedText text={project.description} /></p></div>
         {project.videos?.length > 0 && <div className="project-video-flow">{project.videos.map((video) => <video key={video} src={video} autoPlay muted loop playsInline controls />)}</div>}
-        <div className="project-image-flow">{project.images.map((image, index) => <img key={image} src={image} alt={`${project.title} — ${String(index + 1).padStart(2, '0')}`} onClick={() => openImage(image)} />)}</div>
+        <div className="project-image-flow">{project.images.map((image, index) => <img key={image} src={image} alt={`${project.title} — ${String(index + 1).padStart(2, '0')}`} loading="lazy" decoding="async" onClick={() => openImage(image)} />)}</div>
       </section>
       {zoomedImage && <div className="project-image-zoom" role="button" tabIndex={0} aria-label="关闭图片放大" onClick={() => setZoomedImage(null)} onWheel={zoomImage}><img src={zoomedImage} alt="项目图片放大预览" style={{ transform: `scale(${imageZoom})` }} /></div>}
     </div>
@@ -175,7 +175,7 @@ function App() {
       <section className="work" id="work">
         <div className="projects-intro page-width"><h2>Projects</h2><p>Production car design / Advanced Design / UX Design / ID design / Visual design</p></div>
         <div className="projects-feed">
-          {projects.map((project) => <ProjectCover key={project.id} project={project} onOpen={setActiveProject} />)}
+          {projects.map((project, index) => <ProjectCover key={project.id} project={project} onOpen={setActiveProject} eager={index === 0} />)}
         </div>
       </section>
 
